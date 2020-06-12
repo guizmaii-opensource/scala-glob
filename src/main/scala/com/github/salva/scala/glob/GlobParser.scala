@@ -2,23 +2,10 @@ package com.github.salva.scala.glob
 
 import fastparse._
 import NoWhitespace._
+import com.github.salva.scala.glob.token._
 
-trait Token {}
-
-case class Literal(literal:String) extends Token
-//case class CurlyBrackets(val inside:Seq[Seq[Token]]) extends Token
-case class CurlyBrackets(val inside:Seq[Seq[Token]]) extends Token
-case class SquareBrackets(val inside:Seq[Range], val negated:Boolean) extends Token
-case class Special(var special:Any) extends Token
-
-case class Range(val start:String, val end:Option[Any]=None)
 
 object GlobParser {
-
-  def dbg[T](t: T): T = {
-    println(t.toString)
-    t
-  }
 
   val special = "\\[]{}/*?,"
 
@@ -66,5 +53,5 @@ object GlobParser {
     P(("[" ~/ negated ~/ ranges ~/ "]").map(p => SquareBrackets(p._2, p._1)))
 
   def glob[_:P]:P[Seq[Token]] = P(token.rep(1)./ ~ End)
-
 }
+
