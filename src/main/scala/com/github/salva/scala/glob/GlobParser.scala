@@ -1,44 +1,54 @@
 package com.github.salva.scala.glob
 
-import atto.Atto._
-import atto.Parser
+import fastparse._
+import NoWhitespace._
 
 trait Token {}
 
 case class Literal(literal:String) extends Token
-case class CurlyBrackets(val inside:Seq[Seq[Token]]) extends Token
+//case class CurlyBrackets(val inside:Seq[Seq[Token]]) extends Token
+case class CurlyBrackets(val inside:Any) extends Token
 case class SquareBrackets(val inside:Seq[Range]) extends Token
-case class Special(var special:Char) extends Token
+case class Special(var special:String) extends Token
 
 case class Range(val start:Char, val end:Option[String]=None)
 
 object GlobParser {
+
+  def dbg[T](t: T): T = {
+    println(t.toString)
+    t
+  }
+
   val special = "\\[]{}/*?,"
 
-  def escapedChar =
-    (char('\\') ~ anyChar).map(_._2)
+  def regularChars[_: P]: P[String] = P(CharPred(!special.contains(_)).rep(1)./.!)
+  def escapedChar[_: P]: P[String] = P ("\\" ~/ AnyChar.!)
 
-  def literal:Parser[Token] = many1(choice(noneOf(special), escapedChar)).map(a => Literal(a.toList.mkString))
+  def literal[_: P]: P[Token] =
+    P((regularChars | escapedChar).rep(1)./.map(a => dbg(Literal(a.reduce(_ + _)))))
 
-  def specialChar(c:Char):Parser[Token] = char(c).map(c => Special(c))
+  def special[_: P](s: String): P[Special] =
+    P(P(s)./.map(_ => dbg(Special(s))))
 
-  def comma:Parser[Token] = specialChar(',')
-  def doubleAsterisk: Parser[Token] = (char('*')~char('*')).map(_ => Special('+'))
-  def asterisk: Parser[Token] = specialChar('*')
-  def slash: Parser[Token] = specialChar('/')
-  def anyToken:Parser[Token] = (choice(comma, anyTokenValidInsideCurlyBrackets /*,curlyBrackets*/))
+  def doubleAsterisk[_: P]: P[Token] = special ("**")
+  def asterisk[_: P]: P[Token] = special ("*")
+  def slash[_: P]: P[Token] = special ("/")
+  def comma[_: P]: P[Token] = special (",")
 
-  def anyTokenValidInsideCurlyBrackets =
-    choice(
-      literal,
-      doubleAsterisk,
-      asterisk,
-      slash,
-      curlyBrackets
-    )
+  def tokenValidInsideCurlyBrackets[_: P]: P[Token] =
+    P(literal | doubleAsterisk | asterisk | slash | curlyBrackets)
 
-  def insideCurlyBrackets = sepBy(many(anyTokenValidInsideCurlyBrackets), comma)
+  def commaSepTokens[_:P, A]:P[Seq[Seq[Token]]] =
+      P((tokenValidInsideCurlyBrackets.rep./).rep(sep=",")./)
 
-  def curlyBrackets:Parser[Token] =
-    braces(insideCurlyBrackets).map(CurlyBrackets(_))
+  def curlyBrackets[_: P]: P[Token] =
+    P(("{" ~/ commaSepTokens ~/ "}").map(a => dbg(CurlyBrackets(a))))
+
+  def token[_: P]: P[Token] =
+    P((tokenValidInsideCurlyBrackets | comma | curlyBrackets)./)
+
+  def tokens[_: P]: P[Seq[Token]] = P(token.rep(1)./)
+
+
 }
