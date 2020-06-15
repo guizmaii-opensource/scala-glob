@@ -4,7 +4,9 @@ import com.github.salva.scala.glob._
 
 class Tests extends FunSuite {
   def testResult(glob:String, path:String, cI:Boolean, result:MatchResult) = {
-    test("glob " + glob + " ~ " + path + " --> " + result) {
+    test("glob " + glob + " ~ " + path +
+      (if (cI) " [CI]" else "") +
+      " --> " + result) {
       assert(new Glob(glob).matches(path) == result)
     }
   }
@@ -46,11 +48,15 @@ class Tests extends FunSuite {
   testNoMatch("/[A-Z]tc", "/etc")
   testNoMatch("/[!a-z]tc", "/etc")
   testNoMatch("/?tc", "/eetc")
+  testMatch("/etC**", "/EtcfOO//foo/", false)
+
 
   /* matchingPartially */
 
   def testPartialResult(glob:String, path:String, cI:Boolean, result:MatchResult) = {
-    test("glob partial " + glob + " ~ " + path + " --> " + result) {
+    test("glob partial " + glob + " ~ " + path +
+      (if (cI) " [CI]" else "") +
+      " --> " + result) {
       assert(new Glob(glob, cI).matchesPartially(path) == result)
     }
   }
