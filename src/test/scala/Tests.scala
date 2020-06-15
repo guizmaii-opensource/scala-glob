@@ -48,7 +48,7 @@ class Tests extends FunSuite {
   testNoMatch("/[A-Z]tc", "/etc")
   testNoMatch("/[!a-z]tc", "/etc")
   testNoMatch("/?tc", "/eetc")
-  testMatch("/etC**", "/EtcfOO//foo/", false)
+  testNoMatch("/etC**", "/EtcfOO//foo/", false)
 
 
   /* matchingPartially */
