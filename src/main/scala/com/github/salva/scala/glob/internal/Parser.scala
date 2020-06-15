@@ -1,16 +1,17 @@
-package com.github.salva.scala.glob
+package com.github.salva.scala.glob.internal
 
-import fastparse._
-import NoWhitespace._
-import com.github.salva.scala.glob.token._
+import fastparse._, NoWhitespace._
 
+object Parser {
 
-object GlobParser {
+  def badGlob(msg:String):Nothing = throw new IllegalArgumentException(s"Bad blog pattern: $msg")
+
+  def error[_:P](msg:String):P[Nothing] = Pass.map(_ => badGlob(msg))
 
   val special = "\\[]{}/*?,"
 
   def regularChars[_: P]: P[String] = P(CharPred(!special.contains(_)).rep(1)./.!)
-  def escapedChar[_: P]: P[String] = P ("\\" ~/ AnyChar.!)
+  def escapedChar[_: P]: P[String] = P("\\" ~/ (CharPred(_ != '/' || badGlob("invalid char after '\\'")).! | error("missing char after '\\'")))
 
   def literal[_: P]: P[Token] =
     P((regularChars | escapedChar).rep(1)./.map(a => Literal(a.reduce(_ + _))))
@@ -31,7 +32,7 @@ object GlobParser {
       P((tokenValidInsideCurlyBrackets.rep./).rep(sep=",")./)
 
   def curlyBrackets[_: P]: P[Token] =
-    P(("{" ~/ commaSepTokens ~/ "}").map(a => CurlyBrackets(a)))
+    P(("{" ~/ commaSepTokens ~/ ("}" | error("'}' missing"))).map(a => CurlyBrackets(a)))
 
   def token[_: P]: P[Token] =
     P((tokenValidInsideCurlyBrackets | comma | curlyBrackets)./)
@@ -50,8 +51,33 @@ object GlobParser {
   def negated[_:P]:P[Boolean] = P(("!"./.!.?.map(_.nonEmpty)))
 
   def squareBrackets[_:P]: P[Token] =
-    P(("[" ~/ negated ~/ ranges ~/ "]").map(p => SquareBrackets(p._2, p._1)))
+    P("[" ~/ (negated ~/ (ranges ~/ "]" | error("bad character class"))).map(p => SquareBrackets(p._2, p._1)))
 
   def glob[_:P]:P[Seq[Token]] = P(token.rep(1)./ ~ End)
-}
 
+  def parseGlob(str:String):Seq[Token] = {
+    parse(str, glob(_)) match {
+      case Parsed.Success(tokens,_) => cleanTree(tokens)
+      case Parsed.Failure(_, index, _) => badGlob(s"unknown error at position $index")
+    }
+  }
+
+  def cleanTree(tokens: Seq[Token]): Seq[Token] = {
+    tokens match {
+      case Nil => Nil
+      case head :: tail => {
+        var newTail = cleanTree(tail)
+        head match {
+          case CurlyBrackets(inside) => {
+            if (inside.isEmpty) newTail // remove useless empty alternations
+            else Seq(CurlyBrackets(inside.map(_ ++ newTail)))
+          }
+          case Special(",") => Literal(",") +: newTail
+          case _ => if (tail.eq(newTail)) tokens else head +: newTail
+        }
+      }
+    }
+  }
+
+
+}

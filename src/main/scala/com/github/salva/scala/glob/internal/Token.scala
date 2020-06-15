@@ -1,4 +1,4 @@
-package com.github.salva.scala.glob.token
+package com.github.salva.scala.glob.internal
 
 sealed trait Token {}
 
