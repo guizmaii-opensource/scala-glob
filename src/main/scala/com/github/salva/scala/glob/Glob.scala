@@ -6,9 +6,9 @@ sealed trait MatchResult
 case class Match(mustBeDir:Boolean) extends MatchResult
 case object NoMatch extends MatchResult
 
-class Glob(val glob:String) extends Serializable {
-  val (mayBeDir, mustBeDir) = Compiler.compile(glob)
-  lazy val partial = PartialCompiler.compile(glob)
+class Glob(val glob:String, val caseInsensitive:Boolean=false) extends Serializable {
+  val (mayBeDir, mustBeDir) = Compiler.compile(glob, caseInsensitive)
+  lazy val partial = PartialCompiler.compile(glob, caseInsensitive)
 
   def matches(path:String): MatchResult = {
     if (mayBeDir.map(_.matcher(path).matches).getOrElse(false)) Match(false)

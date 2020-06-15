@@ -5,9 +5,9 @@ import java.util.regex.Pattern
 
 object PartialCompiler extends CompilerHelper {
 
-  def compile(glob:String):Pattern = {
-    val tokens = Parser.parseGlob(glob)
-    Pattern.compile(compileToString(tokens, Nil, "", 0).reverse.mkString)
+  def compile(glob:String, caseInsensitive:Boolean):Pattern = {
+    val acu = compileToString(Parser.parseGlob(glob), Nil, "", 0)
+    stringAcuToRegex(acu, caseInsensitive)
   }
 
   // @tailrec

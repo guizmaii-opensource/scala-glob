@@ -8,7 +8,10 @@ object CompilerHelper {
 
 trait CompilerHelper {
 
-  def stringAcuToRegex(acu:Seq[String]):Pattern = Pattern.compile(acu.reverse.mkString)
+  def stringAcuToRegex(acu:Seq[String], caseInsensitive:Boolean):Pattern = {
+    val flags = if (caseInsensitive) Pattern.CASE_INSENSITIVE else 0
+    Pattern.compile(acu.reverse.mkString, flags)
+  }
 
   def intersperseAndFlatten[A](seq: Seq[Seq[A]], sep: A): Seq[A] = {
     val sepSeq = Seq(sep)

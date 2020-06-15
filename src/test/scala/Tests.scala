@@ -3,14 +3,14 @@ import org.scalatest.FunSuite
 import com.github.salva.scala.glob._
 
 class Tests extends FunSuite {
-  def testResult(glob:String, path:String, result:MatchResult) = {
+  def testResult(glob:String, path:String, cI:Boolean, result:MatchResult) = {
     test("glob " + glob + " ~ " + path + " --> " + result) {
       assert(new Glob(glob).matches(path) == result)
     }
   }
-  def testNoMatch(glob:String, path:String) = testResult(glob, path, NoMatch)
-  def testMatch(glob:String, path:String) = testResult(glob, path, Match(false))
-  def testMatchDir(glob:String, path:String) = testResult(glob, path, Match(true))
+  def testNoMatch(glob:String, path:String, cI:Boolean=false) = testResult(glob, path, cI, NoMatch)
+  def testMatch(glob:String, path:String, cI:Boolean=false) = testResult(glob, path, cI, Match(false))
+  def testMatchDir(glob:String, path:String, cI:Boolean=false) = testResult(glob, path, cI, Match(true))
 
   testMatch("/etc", "/etc")
   testMatch("/etc", "/etc/")
@@ -31,6 +31,7 @@ class Tests extends FunSuite {
   testMatch("/etc**", "/etc//foo")
   testMatch("/etc**", "/etcfoo//foo")
   testMatch("/etc**", "/etcfoo//foo/")
+  testMatch("/etC**", "/EtcfOO//foo/", true)
 
   testMatchDir("/etc/", "/etc")
   testMatchDir("/etc/", "/etc/")
@@ -48,14 +49,13 @@ class Tests extends FunSuite {
 
   /* matchingPartially */
 
-  def testPartialResult(glob:String, path:String, result:MatchResult) = {
+  def testPartialResult(glob:String, path:String, cI:Boolean, result:MatchResult) = {
     test("glob partial " + glob + " ~ " + path + " --> " + result) {
-      assert(new Glob(glob).matchesPartially(path) == result)
+      assert(new Glob(glob, cI).matchesPartially(path) == result)
     }
   }
-  def testPartialNoMatch(glob:String, path:String) = testPartialResult(glob, path, NoMatch)
-  def testPartialMatchDir(glob:String, path:String) = testPartialResult(glob, path, Match(true))
-
+  def testPartialNoMatch(glob:String, path:String, cI:Boolean=false) = testPartialResult(glob, path, cI, NoMatch)
+  def testPartialMatchDir(glob:String, path:String, cI:Boolean=false) = testPartialResult(glob, path, cI, Match(true))
 
   testPartialMatchDir("/etc/", "/")
   testPartialMatchDir("etc", "/")
@@ -72,5 +72,4 @@ class Tests extends FunSuite {
   testPartialNoMatch("/etc/", "/etc")
   testPartialNoMatch("/etc", "etc")
   testPartialNoMatch("etc", "etc")
-
 }

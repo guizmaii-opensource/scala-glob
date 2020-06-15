@@ -6,10 +6,11 @@ import scala.annotation.tailrec
 
 object Compiler extends CompilerHelper {
 
-  def compile(glob:String):(Option[Pattern], Option[Pattern]) = {
+  def compile(glob:String, caseInsensitive:Boolean):(Option[Pattern], Option[Pattern]) = {
     val tokens = Parser.parseGlob(glob)
     val (mayBeDir, mustBeDir) = compileToString(tokens, Nil, "0")
-    (mayBeDir.map(stringAcuToRegex(_)), mustBeDir.map(stringAcuToRegex(_)))
+    (mayBeDir.map(stringAcuToRegex(_, caseInsensitive)),
+      mustBeDir.map(stringAcuToRegex(_, caseInsensitive)))
   }
 
   @tailrec
