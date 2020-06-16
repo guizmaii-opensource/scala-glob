@@ -45,7 +45,11 @@ Both take a path and return one of the following values:
 `matchesPartially` returns whether the given path matches a fragment of
 the glob pattern. For instance `Glob("/foo/bar")` will match successfully
 patterns `"/"` and `"/foo"` but not `"/fo"`, `"/fooo"` or `"/foo/bar"`
-(this last case doesn't partially-match because it is a full match). 
+(this last case doesn't partially-match because it is a full match).
+
+Note that matching and partially-matching are not exclusive,
+For instance, with `Glob("/foo{,/bar}")` both `matches` and
+`matchesPartially` will succeed when called against `"/foo"`.
 
 The `Glob` constructor accepts the following optional argument flags:
 
