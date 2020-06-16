@@ -26,7 +26,7 @@ g.matches(path) match {
 }
 ```
 
-## Documentation
+## Usage
 
 `Glob` objects provide two main methods, `matches` and `matchesPartially`.
 Both take a path and return one of the following values:
