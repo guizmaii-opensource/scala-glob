@@ -110,7 +110,7 @@ Though they may disappear without notice from future library versions.
 
 ## Support
 
-Bug reports, feature requests and pathes can be submitted using the
+Bug reports, feature requests and patches can be submitted using the
 regular GitHub [tools](https://github.com/salva/scala-glob).
 
 For questions about the module usage, I would much prefer
