@@ -71,7 +71,7 @@ object Parser {
           head match {
             case CurlyBrackets(inside) => {
               if (inside.isEmpty) doIt(tail, acu)
-              else CurlyBrackets(inside.map(b => doIt(b ++ tail, Nil))) +: acu
+              else (CurlyBrackets(inside.map(b => doIt(b ++ tail, Nil))) +: acu).reverse
             }
             case Special(",") => doIt(tail, Literal(",") +: acu)
             case _ => doIt(tail, head +: acu)

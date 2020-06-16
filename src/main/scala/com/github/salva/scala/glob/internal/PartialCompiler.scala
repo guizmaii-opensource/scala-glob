@@ -54,7 +54,7 @@ class PartialCompiler(val period:Boolean) extends CompilerHelper with CompilerPa
   }
 
   def compileCurlyBrackets(branches:Seq[Seq[Token]], acu:Seq[String], state:String): Seq[String] = {
-    ")" +: (intersperseAndFlatten(branches.map(compileToString(_, Nil, state, 0)), ")|(?:") ++ ("(?:" +: acu))
+    "))" +: (intersperseAndFlatten(branches.map(compileToString(_, Nil, state, 0)), ")|(?:") ++ ("(?:(?:" +: acu))
   }
 
   def flushState(state:String, acu:Seq[String], open:Int): (Seq[String], Int) = {

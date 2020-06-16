@@ -101,6 +101,23 @@ class Tests extends FunSuite {
   testPartialMatchDir("/etc/.**", "/etc/.", p=false)
   testPartialMatchDir("/etc/**", "/etc/.foo", p=true)
   testPartialMatchDir("/etc/**", "/etc/..foo.", p=true)
+  testPartialMatchDir("/etc/{foo,bar}**", "/")
+  testPartialMatchDir("/etc/{foo,bar}**", "/etc")
+  testPartialMatchDir("/etc/{foo,bar}**", "/etc/")
+  testPartialMatchDir("/etc/{foo,bar}**", "/etc/foo")
+  testPartialMatchDir("/etc/{foo,bar}**", "/etc/bar")
+  testPartialMatchDir("/etc/{foo,bar}**", "/etc/barfoo")
+  testPartialMatchDir("/etc/{foo,bar}**", "/etc/bar/foo")
+  testPartialMatchDir("**/etc/", "/etc")
+  testPartialMatchDir("**/etc/", "/foo/etc")
+  testPartialMatchDir("**/etc", "/foo/etc")
+  testPartialMatchDir("/[a-z]tc/foo", "/etc/")
+  testPartialMatchDir("/?tc/foo", "/etc/")
+  testPartialMatchDir("/*tc/foo", "/etc/")
+  testPartialMatchDir("/*tc/foo", "/.etc", p=true)
+  testPartialMatchDir("//*tc//foo", "/.etc", p=true)
+  testPartialMatchDir("//*tc//foo", "//.etc", p=true)
+  testPartialMatchDir("/*tc//foo", "//.etc", p=true)
 
   testPartialNoMatch("/etc", "/etc")
   testPartialNoMatch("etc", "/")
@@ -115,5 +132,15 @@ class Tests extends FunSuite {
   testPartialNoMatch("/etc/**", "/etc/./etc", p=true)
   testPartialNoMatch("/etc/**", "/etc/.foo", p=false)
   testPartialNoMatch("/etc/**", "/etc/..foo.", p=false)
+  testPartialNoMatch("/etc/{foo,bar}**", "/etc/doz")
+  testPartialNoMatch("/[a-z]tc/foo", "/etc/foo")
+  testPartialNoMatch("/?tc/foo", "/etc/foo")
+  testPartialNoMatch("/??tc/foo", "/etc")
+  testPartialNoMatch("/*tc/foo", "/.etc")
+  testPartialNoMatch("//*tc//foo", "/.etc")
+
+
+
+
 
 }
