@@ -114,7 +114,7 @@ Bug reports, feature requests and patches can be submitted using the
 regular GitHub [tools](https://github.com/salva/scala-glob).
 
 For questions about the module usage, I would much prefer
-then to be posted in a public forum as 
+then to be posted in a public forum such as 
 [StackOverflow](https://stackoverflow.com/).
 That way they would also become visible to others facing similar
 issues in the future. Though, fell free to notify me about then
