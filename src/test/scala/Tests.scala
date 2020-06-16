@@ -3,16 +3,20 @@ import org.scalatest.FunSuite
 import com.github.salva.scala.glob._
 
 class Tests extends FunSuite {
-  def testResult(glob:String, path:String, cI:Boolean, result:MatchResult) = {
+  def testResult(glob:String, path:String, cI:Boolean, p:Boolean, result:MatchResult) = {
     test("glob " + glob + " ~ " + path +
       (if (cI) " [CI]" else "") +
+      (if (p) "[P]" else "") +
       " --> " + result) {
-      assert(new Glob(glob).matches(path) == result)
+      assert(new Glob(glob, cI).matches(path) == result)
     }
   }
-  def testNoMatch(glob:String, path:String, cI:Boolean=false) = testResult(glob, path, cI, NoMatch)
-  def testMatch(glob:String, path:String, cI:Boolean=false) = testResult(glob, path, cI, Match(false))
-  def testMatchDir(glob:String, path:String, cI:Boolean=false) = testResult(glob, path, cI, Match(true))
+  def testNoMatch(glob:String, path:String, cI:Boolean=false, p:Boolean=false) =
+    testResult(glob, path, p, cI, NoMatch)
+  def testMatch(glob:String, path:String, cI:Boolean=false, p:Boolean=false) =
+    testResult(glob, path, cI, p, Match(false))
+  def testMatchDir(glob:String, path:String, cI:Boolean=false, p:Boolean=false) =
+    testResult(glob, path, cI, p, Match(true))
 
   testMatch("/etc", "/etc")
   testMatch("/etc", "/etc/")
@@ -34,11 +38,17 @@ class Tests extends FunSuite {
   testMatch("/etc**", "/etcfoo//foo")
   testMatch("/etc**", "/etcfoo//foo/")
   testMatch("/etC**", "/EtcfOO//foo/", true)
+  testMatch("/et*", "/etc")
+  testMatch("/e*", "/etc")
+  testMatch("/*t?", "/etc/")
+  testMatch("/???", "/etc")
+  testMatch("???", "etc")
 
   testMatchDir("/etc/", "/etc")
   testMatchDir("/etc/", "/etc/")
   testMatchDir("/etc**/", "/etc")
   testMatchDir("/etc**/bar/", "/etcfoo///dii/bar")
+  testMatchDir("/???/", "/etc")
 
   testNoMatch("/etc", "etc")
   testNoMatch("/etc", "etc/")
@@ -49,22 +59,32 @@ class Tests extends FunSuite {
   testNoMatch("/[!a-z]tc", "/etc")
   testNoMatch("/?tc", "/eetc")
   testNoMatch("/etC**", "/EtcfOO//foo/", false)
-
+  testNoMatch("/????", "/.etc")
+  testNoMatch("????", ".etc")
+  testNoMatch("/?", "/.")
+  testNoMatch("/??", "/..")
+  testNoMatch("/*", "/.")
+  testNoMatch("/*", "/..")
+  testNoMatch("/**", "/.")
+  testNoMatch("/**", "/..")
+  testNoMatch("**", "/..")
+  testNoMatch("**", "foo/..")
+  testNoMatch("**", "foo/../bar")
 
   /* matchingPartially */
 
-  def testPartialResult(glob:String, path:String, cI:Boolean, result:MatchResult) = {
+  def testPartialResult(glob:String, path:String, cI:Boolean, p:Boolean, result:MatchResult) = {
     test("glob partial " + glob + " ~ " + path +
       (if (cI) " [CI]" else "") +
+      (if (p) " [P]" else "") +
       " --> " + result) {
-      assert(new Glob(glob, cI).matchesPartially(path) == result)
+      assert(new Glob(glob, cI, p).matchesPartially(path) == result)
     }
   }
-  def testPartialNoMatch(glob:String, path:String, cI:Boolean=false) = testPartialResult(glob, path, cI, NoMatch)
-  def testPartialMatchDir(glob:String, path:String, cI:Boolean=false) = testPartialResult(glob, path, cI, Match(true))
+  def testPartialNoMatch(glob:String, path:String, cI:Boolean=false, p:Boolean=false) = testPartialResult(glob, path, cI, p, NoMatch)
+  def testPartialMatchDir(glob:String, path:String, cI:Boolean=false, p:Boolean=false) = testPartialResult(glob, path, cI, p, Match(true))
 
   testPartialMatchDir("/etc/", "/")
-  testPartialMatchDir("etc", "/")
   testPartialMatchDir("etc", "")
   testPartialMatchDir("/etc**", "/etc")
   testPartialMatchDir("/etc**", "/etc///")
@@ -72,10 +92,28 @@ class Tests extends FunSuite {
   testPartialMatchDir("/etc/**", "/etc")
   testPartialMatchDir("/etc/**", "/etc/foo")
   testPartialMatchDir("/etc/**", "/etc/foo///")
+  testPartialMatchDir("/Etc/**", "/etC/foo///", true)
+  testPartialMatchDir("/etc/.**", "/etc/.foo")
+  testPartialMatchDir("/etc/.**", "/etc/")
+  testPartialMatchDir("/etc/.**", "/etc/..", p=true)
+  testPartialMatchDir("/etc/.**", "/etc/.", p=true)
+  testPartialMatchDir("/etc/.**", "/etc/..", p=false)
+  testPartialMatchDir("/etc/.**", "/etc/.", p=false)
+  testPartialMatchDir("/etc/**", "/etc/.foo", p=true)
+  testPartialMatchDir("/etc/**", "/etc/..foo.", p=true)
 
   testPartialNoMatch("/etc", "/etc")
+  testPartialNoMatch("etc", "/")
   testPartialNoMatch("/etc", "/usr")
   testPartialNoMatch("/etc/", "/etc")
   testPartialNoMatch("/etc", "etc")
   testPartialNoMatch("etc", "etc")
+  testPartialNoMatch("/Etc/**", "/etC/foo///", false)
+  testPartialNoMatch("/etc/**", "/etc/..", p=true)
+  testPartialNoMatch("/etc/**", "/etc/.", p=true)
+  testPartialNoMatch("/etc/**", "/etc/../etc", p=true)
+  testPartialNoMatch("/etc/**", "/etc/./etc", p=true)
+  testPartialNoMatch("/etc/**", "/etc/.foo", p=false)
+  testPartialNoMatch("/etc/**", "/etc/..foo.", p=false)
+
 }

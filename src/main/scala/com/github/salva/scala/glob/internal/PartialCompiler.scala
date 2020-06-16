@@ -2,13 +2,16 @@ package com.github.salva.scala.glob.internal
 
 import java.util.regex.Pattern
 
-
 object PartialCompiler extends CompilerHelper {
 
-  def compile(glob:String, caseInsensitive:Boolean):Pattern = {
-    val acu = compileToString(Parser.parseGlob(glob), Nil, "", 0)
+  def compile(glob:String, caseInsensitive:Boolean, period:Boolean):Pattern = {
+    val compiler = new PartialCompiler(period)
+    val acu = compiler.compileToString(Parser.parseGlob(glob), Seq("(?:"), "", 1)
     stringAcuToRegex(acu, caseInsensitive)
   }
+}
+
+class PartialCompiler(val period:Boolean) extends CompilerHelper with CompilerPatterns {
 
   // @tailrec
   def compileToString(tokens:Seq[Token], acu: Seq[String], state:String, open:Int):Seq[String] = {
@@ -25,8 +28,8 @@ object PartialCompiler extends CompilerHelper {
           }
           case Special("**") => {
             state match {
-              case "" => closeOpen(".*" +: acu, open)
-              case "/" => closeOpen("(?:/.*)?" +: acu, open)
+              case "" => closeOpen(pAA +: acu, open)
+              case "/" => closeOpen(pSAA +: acu, open)
               case _ => internalError(s"""Invalid internal state "$state" reached """)
             }
           }
@@ -39,8 +42,8 @@ object PartialCompiler extends CompilerHelper {
             val (acu1, open1) = flushState(state, acu, open)
             token match {
               case Literal(literal) => compileToString(tail, quoteString(literal) +: acu1, "", open1)
-              case Special("*") => compileToString(tail, ".*" +: acu1, "", open1)
-              case Special("?") => compileToString(tail, "." +: acu1, "", open1)
+              case Special("*") => compileToString(tail, pA +: acu1, "", open1)
+              case Special("?") => compileToString(tail, pQ +: acu1, "", open1)
               case SquareBrackets(inside, negated) =>
                 compileToString(tail, compileSquareBrackets(inside, negated, acu1), "", open1)
               case _ => internalError(s"""Unexpected token "$token" found""")            }

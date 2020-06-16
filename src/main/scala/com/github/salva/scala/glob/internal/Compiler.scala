@@ -5,45 +5,67 @@ import java.util.regex.Pattern
 import scala.annotation.tailrec
 
 object Compiler extends CompilerHelper {
-
-  def compile(glob:String, caseInsensitive:Boolean):(Option[Pattern], Option[Pattern]) = {
+  def compile(glob:String, caseInsensitive:Boolean, period:Boolean):(Option[Pattern], Option[Pattern]) = {
+    val compiler = new Compiler(period)
     val tokens = Parser.parseGlob(glob)
-    val (mayBeDir, mustBeDir) = compileToString(tokens, Nil, "0")
-    (mayBeDir.map(stringAcuToRegex(_, caseInsensitive)),
-      mustBeDir.map(stringAcuToRegex(_, caseInsensitive)))
+    val (mayBeDir, mustBeDir) = compiler.compileToString(tokens, Nil, "0")
+    (mayBeDir.map(stringAcuToRegex(_, caseInsensitive)), mustBeDir.map(stringAcuToRegex(_, caseInsensitive)))
+  }
+}
+
+class Compiler(val period:Boolean) extends CompilerHelper with CompilerPatterns {
+  
+  def flushState(state:String, acu:Seq[String]):Seq[String] = {
+    state match {
+      case "" | "0" => acu
+      case "/" | "0/" => "/+" +: acu
+      case "/**" => pSAA +: acu
+      case "0/**" => pZSAA +: acu
+      case "/**/" | "0/**/" => pSAAS +: acu
+      case "**" => pAA +: acu
+      case "0**" => pStartAA +: acu
+      case "**/" => pAAS +: acu
+      case "0**/" => pZAAS +: acu
+      case _ => internalError(s"""Invalid internal state "$state" reached""")
+    }
   }
 
   @tailrec
-  def compileToString(tokens: Seq[Token], acu: Seq[String] = Nil, state: String): (Option[Seq[String]], Option[Seq[String]]) = {
+  final def compileToString(tokens: Seq[Token],
+                            acu: Seq[String] = Nil,
+                            state: String): (Option[Seq[String]], Option[Seq[String]]) = {
     tokens match {
       case Nil => {
+        // println("> nil, state: " + state)
         state match {
           case ""             => (Some("/*"       +: acu), None                   )
           case "/"            => (None                   , Some("/*"       +: acu))
-          case "/**"          => (Some("(?:/.*)?" +: acu), None                   )
-          case "/**/"         => (None                   , Some("(?:/.*)?" +: acu))
+          case "/**"          => (Some(pSAA       +: acu), None                   )
+          case "/**/"         => (None                   , Some(pSAA       +: acu))
           case "0"            => (Some(""         +: acu), None                   )
-          case "0/"           => (None                   , Some("/"        +: acu))
-          case "0/**"         => (Some("/.*"      +: acu), None                   )
-          case "0/**/"        => (None                   , Some("/.*"      +: acu))
-          case "**"  | "0**"  => (Some(".*"       +: acu), None                   )
-          case "**/" | "0**/" => (None                   , Some(".*"       +: acu))
+          case "0/"           => (None                   , Some("/+"        +: acu))
+          case "0/**"         => (Some(pZSAA      +: acu), None                   )
+          case "0/**/"        => (None                   , Some(pZSAA      +: acu))
+          case "**"  | "0**"  => (Some(pAA        +: acu), None                   )
+          case "**/" | "0**/" => (None                   , Some(pAA        +: acu))
           case _ => internalError(s"""Invalid internal state "$state" reached""")
         }
       }
       case token::tail => {
+        // println("> " + token + ", state: " + state)
         token match {
           case Special("/") => {
             state match {
               case "" | "**" | "/**" | "0" | "0**" | "0/**" => compileToString(tail, acu, state + "/")
               case "/" | "/**/" | "0/" | "0/**/" => compileToString(tail, acu, state)
-              case _ => compileToString(tail, flushState(state, acu), "/")
+              case _ => //compileToString(tail, flushState(state, acu), "/")
+                internalError(s"""Invalid internal state "$state" reached""")
             }
           }
           case Special("**") => {
             state match {
-              case "" | "/" | "0" => compileToString(tail, acu, state + "**")
-              case "**" | "/**" | "0/**" => compileToString(tail, acu, state)
+              case "" | "/" | "0" | "0/" => compileToString(tail, acu, state + "**")
+              case "**" | "/**" | "0**" | "0/**" => compileToString(tail, acu, state)
               case _ => compileToString(tail, flushState(state, acu), "**")
             }
           }
@@ -56,8 +78,8 @@ object Compiler extends CompilerHelper {
             val acu1 = flushState(state, acu)
             token match {
               case Literal(literal) => compileToString(tail, quoteString(literal) +: acu1, "")
-              case Special("*") => compileToString(tail, ".*" +: acu1, "")
-              case Special("?") => compileToString(tail, "." +: acu1, "")
+              case Special("*") => compileToString(tail, pA +: acu1, "")
+              case Special("?") => compileToString(tail, pQ +: acu1, "")
               case SquareBrackets(inside, negated) =>
                 compileToString(tail, compileSquareBrackets(inside, negated, acu1), "")
               case _ => internalError(s"""Unexpected token "$token" found""")
@@ -68,19 +90,7 @@ object Compiler extends CompilerHelper {
     }
   }
 
-  def flushState(state:String, acu:Seq[String]):Seq[String] = {
-    state match {
-      case "" | "0" => acu
-      case "/" | "0/" => "/+" +: acu
-      case "/**" | "0/**" => "/.*" +: acu
-      case "/**/" | "0/**/" => "/(.*/)?" +: acu
-      case "**" | "0**" => ".*" +: acu
-      case "**/" | "0**/" => ".*/" +: acu
-      case _ => internalError(s"""Invalid internal state "$state" reached""")
-    }
-  }
-
-  def compileCurlyBrackets(branches: Seq[Seq[Token]], acu:Seq[String], state:String):(Option[Seq[String]], Option[Seq[String]]) = {
+  def compileCurlyBrackets(branches: Seq[Seq[Token]], acu:Seq[String], state:String): (Option[Seq[String]], Option[Seq[String]]) = {
 
     def compileSide(side:Seq[Option[Seq[String]]], acu:Seq[String]):Option[Seq[String]] = {
       side.flatten match {
