@@ -1,10 +1,16 @@
 package com.github.salva.scala.glob
 
 import com.github.salva.scala.glob.internal.{Compiler, PartialCompiler}
+import scala.language.implicitConversions
 
 sealed trait MatchResult {
   def ||(other:MatchResult):MatchResult
   def &&(other:MatchResult):MatchResult
+  def toBoolean:Boolean
+}
+
+object MatchResult {
+  implicit def toBoolean(matchResult: MatchResult) = matchResult.toBoolean
 }
 
 case class Match(mustBeDir:Boolean) extends MatchResult {
@@ -23,11 +29,13 @@ case class Match(mustBeDir:Boolean) extends MatchResult {
       case Match(_) => if (mustBeDir) this else other
     }
   }
+  override def toBoolean:Boolean = true
 }
 
 case object NoMatch extends MatchResult {
   override def ||(other:MatchResult):MatchResult = other
   override def &&(other:MatchResult):MatchResult = this
+  override def toBoolean:Boolean = false
 }
 
 class Glob(val glob:String, val caseInsensitive:Boolean=false, val period:Boolean=false) extends Serializable {
