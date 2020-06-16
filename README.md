@@ -3,9 +3,9 @@
 This library allows one to check paths against file system glob
 patterns.
 
-It doesn't provides methods for walking the filesystem looking
-for entries matching a given pattern, though you could write
-them easily on top of this library.
+Note that it doesn't provide methods for walking the filesystem
+looking for entries matching a given pattern, though you could
+write them easily on top of this library.
 
 Actually this library is an spin-off from my other library
 [spark-hugefs](github.com/salva/spark-hugefs) where it is used
@@ -43,8 +43,8 @@ Both take a path and return one of the following values:
     hand, `Glob("/foo")` returns `Match(false)`.
 
 `matchesPartially` returns whether the given path matches a fragment of
-the glob pattern. For instance `Glob("/foo/bar")` will match sucesfully
-patterns `"/"` and `"/foo"` but not `"/foo/bar"` as it is a full
+the glob pattern. For instance `Glob("/foo/bar")` will match successfully
+patterns `"/"` and `"/foo"` but not `"/foo/bar"` as that case is a full
 match.
 
 The `Glob` constructor accepts the following optional argument flags:
@@ -88,7 +88,7 @@ As a general guideline, `scala-glob` mimics the globing support in
 [`bash`](https://www.gnu.org/savannah-checkouts/gnu/bash/manual/bash.html#Filename-Expansion),
 with the `globstar` extension. In principle, any deviation from there is
 considered a bug, though there may be some corner cases where it would
-be imposible to behave in the same way as bash without accesing the file
+be impossible to behave in the same way as bash without accessing the file
 system.
 
 ## Limitations
@@ -96,6 +96,11 @@ system.
 So far, only UNIX style paths are supported. It may probably also work
 for Windows paths once you replace the backslash separators (`\ `) by the
 forward ones (`/`).
+
+## Internals
+
+`scala-glob` compiles the glob expressions into regular expressions
+that can then be checked efficiently using Java native Regex support.
 
 ## Support
 
@@ -108,6 +113,21 @@ then to be posted in a public forum as
 That way they would also become visible to others facing similar
 issues in the future. Though, fell free to notify me about then
 once posted by email (sfandino@yahoo.com).
+
+## See also
+
+  * Java standard
+    [java.nio.file.PathMatcher](https://docs.oracle.com/javase/8/docs/api/java/nio/file/PathMatcher.html)
+    class: provides similar functionality, but it doesn't support
+    partial matching or indicating whether a directory is required
+    after a match (those features are required in order to
+    implement and efficient file system walker).
+
+  * [OS-Lib](https://github.com/lihaoyi/os-lib):
+    provides an alternative, Scala friendly way to perform most
+    tasks related to querying and accessing the file system, including
+    globbing. Unfortunately (AFAIK) it is tied to the native
+    file system layer.
 
 ## Copying
 
