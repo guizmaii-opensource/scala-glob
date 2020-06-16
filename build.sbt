@@ -2,7 +2,7 @@
 version := "0.0.1"
 scalaVersion := "2.11.12"
 
-crossScalaVersions := List("2.12.11", "2.13.2")
+crossScalaVersions := List("2.11.12", "2.12.11", "2.13.2")
 
 libraryDependencies += {
   CrossVersion.partialVersion(scalaVersion.value) match {
