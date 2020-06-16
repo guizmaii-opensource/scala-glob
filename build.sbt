@@ -1,8 +1,8 @@
 
 version := "0.0.1"
-scalaVersion := "2.13.2"
+scalaVersion := "2.11.12"
 
-libraryDependencies += "com.lihaoyi" %% "fastparse" % "2.2.2"
+libraryDependencies += "com.lihaoyi" %% "fastparse" % "2.1.2"
 libraryDependencies += "org.tpolecat" %% "atto-core" % "0.7.0"
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.8" % Test
 

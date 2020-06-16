@@ -63,21 +63,24 @@ object Parser {
   }
 
   def cleanTree(tokens: Seq[Token]): Seq[Token] = {
-    tokens match {
-      case Nil => Nil
-      case head :: tail => {
-        var newTail = cleanTree(tail)
-        head match {
-          case CurlyBrackets(inside) => {
-            if (inside.isEmpty) newTail // remove useless empty alternations
-            else Seq(CurlyBrackets(inside.map(_ ++ newTail)))
+
+    def doIt(tokens:Seq[Token], acu:Seq[Token]): Seq[Token] = {
+      tokens match {
+        case Nil => acu.reverse
+        case head +: tail => {
+          head match {
+            case CurlyBrackets(inside) => {
+              if (inside.isEmpty) doIt(tail, acu)
+              else CurlyBrackets(inside.map(b => doIt(b ++ tail, Nil))) +: acu
+            }
+            case Special(",") => doIt(tail, Literal(",") +: acu)
+            case _ => doIt(tail, head +: acu)
           }
-          case Special(",") => Literal(",") +: newTail
-          case _ => if (tail.eq(newTail)) tokens else head +: newTail
         }
       }
     }
-  }
 
+    doIt(tokens, Nil)
+  }
 
 }

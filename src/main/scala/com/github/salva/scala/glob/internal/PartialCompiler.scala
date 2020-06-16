@@ -17,7 +17,7 @@ class PartialCompiler(val period:Boolean) extends CompilerHelper with CompilerPa
   def compileToString(tokens:Seq[Token], acu: Seq[String], state:String, open:Int):Seq[String] = {
     tokens match {
       case Nil => closeOpen("(?!)" +: acu, open)
-      case token::tail => {
+      case token +: tail => {
         token match {
           case Special("/") => {
             state match {
