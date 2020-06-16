@@ -99,7 +99,7 @@ forward ones (`/`).
 
 ## Internals
 
-`scala-glob` compiles the glob expressions into regular expressions
+`scala-glob` compiles the glob patterns into regular expressions
 that can then be checked efficiently using Java native Regex support.
 
 The `Glob` object has three slots,`mayBeDir`, `mustBeDir` and `partial`,
