@@ -29,7 +29,7 @@ class PartialCompiler(val period:Boolean) extends CompilerHelper with CompilerPa
           case Special("**") => {
             state match {
               case "" => closeOpen(pAA +: acu, open)
-              case "/" => closeOpen(pSAA +: acu, open)
+              case "/" => closeOpen(pSAA0 +: acu, open)
               case _ => internalError(s"""Invalid internal state "$state" reached """)
             }
           }

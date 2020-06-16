@@ -70,7 +70,7 @@ class Tests extends FunSuite {
   testNoMatch("**", "/..")
   testNoMatch("**", "foo/..")
   testNoMatch("**", "foo/../bar")
-
+  testNoMatch("*/**t", "apt")
   /* matchingPartially */
 
   def testPartialResult(glob:String, path:String, cI:Boolean, p:Boolean, result:MatchResult) = {

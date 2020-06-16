@@ -19,8 +19,8 @@ class Compiler(val period:Boolean) extends CompilerHelper with CompilerPatterns 
     state match {
       case "" | "0" => acu
       case "/" | "0/" => "/+" +: acu
-      case "/**" => pSAA +: acu
-      case "0/**" => pZSAA +: acu
+      case "/**" => pSAA1 +: acu
+      case "0/**" => pSAA1 +: acu
       case "/**/" | "0/**/" => pSAAS +: acu
       case "**" => pAA +: acu
       case "0**" => pStartAA +: acu
@@ -40,10 +40,10 @@ class Compiler(val period:Boolean) extends CompilerHelper with CompilerPatterns 
         state match {
           case ""             => (Some("/*"       +: acu), None                   )
           case "/"            => (None                   , Some("/*"       +: acu))
-          case "/**"          => (Some(pSAA       +: acu), None                   )
-          case "/**/"         => (None                   , Some(pSAA       +: acu))
+          case "/**"          => (Some(pSAA0      +: acu), None                   )
+          case "/**/"         => (None                   , Some(pSAA0      +: acu))
           case "0"            => (Some(""         +: acu), None                   )
-          case "0/"           => (None                   , Some("/+"        +: acu))
+          case "0/"           => (None                   , Some("/+"       +: acu))
           case "0/**"         => (Some(pZSAA      +: acu), None                   )
           case "0/**/"        => (None                   , Some(pZSAA      +: acu))
           case "**"  | "0**"  => (Some(pAA        +: acu), None                   )
