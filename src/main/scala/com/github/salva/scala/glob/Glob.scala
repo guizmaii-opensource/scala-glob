@@ -18,4 +18,6 @@ class Glob(val glob:String, val caseInsensitive:Boolean=false, val period:Boolea
 
   def matchesPartially(path:String): MatchResult =
     if (partial.matcher(path).matches) Match(true) else NoMatch
+
+  override def toString: String = s"Glob($glob)"
 }
