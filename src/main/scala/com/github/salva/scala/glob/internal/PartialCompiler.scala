@@ -65,5 +65,5 @@ class PartialCompiler(val period:Boolean) extends CompilerHelper with CompilerPa
     }
   }
 
-  def closeOpen(acu:Seq[String], open:Int) = ")?".repeat(open) +:acu
+  def closeOpen(acu:Seq[String], open:Int):Seq[String] = Seq.fill(open)(")?") ++ acu
 }
