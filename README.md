@@ -94,13 +94,19 @@ system.
 ## Limitations
 
 So far, only UNIX style paths are supported. It may probably also work
-for Windows paths once you replace the backslash separators (`\ `) by the
+for Windows paths once you replace the backslash separators (`\ `) by
 forward ones (`/`).
 
 ## Internals
 
 `scala-glob` compiles the glob expressions into regular expressions
 that can then be checked efficiently using Java native Regex support.
+
+The `Glob` object has three slots,`mayBeDir`, `mustBeDir` and `partial`,
+containing
+[`java.util.regex.Pattern`](https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html)
+objects that can be inspected or used directly for debugging purposes.
+Though they may disappear without notice from future library versions. 
 
 ## Support
 
