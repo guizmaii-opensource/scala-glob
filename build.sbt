@@ -2,7 +2,20 @@
 version := "0.0.1"
 scalaVersion := "2.11.12"
 
-libraryDependencies += "com.lihaoyi" %% "fastparse" % "2.1.2"
+crossScalaVersions := List("2.12.11", "2.13.2")
+
+libraryDependencies += {
+  CrossVersion.partialVersion(scalaVersion.value) match {
+    case Some((2, minor)) => {
+      if (minor >= 12)
+        "com.lihaoyi" %% "fastparse" % "2.3.0"
+      else
+        "com.lihaoyi" %% "fastparse" % "2.1.2"
+    }
+    case unsupportedVersion => throw new IllegalArgumentException("Bad Scala version $unsupportedVersion found")
+  }
+}
+
 libraryDependencies += "org.tpolecat" %% "atto-core" % "0.7.0"
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.8" % Test
 
