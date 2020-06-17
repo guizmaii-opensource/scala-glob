@@ -16,7 +16,6 @@ libraryDependencies += {
   }
 }
 
-libraryDependencies += "org.tpolecat" %% "atto-core" % "0.7.0"
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.8" % Test
 
 organization := "com.github.salva"
