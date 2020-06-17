@@ -43,6 +43,8 @@ class Tests extends FunSuite {
   testMatch("/*t?", "/etc/")
   testMatch("/???", "/etc")
   testMatch("???", "etc")
+  testMatch("{foo,bar,doz}/**/*.jp{,e}g", "bar/foo/000/000000_211.jpg")
+  testMatch("{foo,bar,doz}/**/*.jp{,e}g", "foo/foo/000/000000_211.jpeg")
 
   testMatchDir("/etc/", "/etc")
   testMatchDir("/etc/", "/etc/")
