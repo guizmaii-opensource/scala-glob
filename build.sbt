@@ -1,34 +1,24 @@
 
-version := "0.0.3"
-scalaVersion := "2.11.12"
+lazy val scala213 = "2.13.6"
+lazy val scala212 = "2.12.15"
+lazy val scala211 = "2.11.12"
+lazy val supportedScalaVersions = List(scala211, scala212, scala213)
 
-crossScalaVersions := List("2.11.12", "2.12.11", "2.13.2")
+ThisBuild / version      := "0.0.3"
+ThisBuild / organization := "com.github.salva"
+ThisBuild / organizationHomepage := Some(url("https://github.com/salva"))
+ThisBuild / scalaVersion := scala213
+ThisBuild / description := "Manipulate file system glob patterns"
+ThisBuild / licenses := Seq("APL2" -> url("https://www.apache.org/licenses/LICENSE-2.0.txt"))
+ThisBuild / homepage := Some(url("https://github.com/salva/scala-glob"))
 
-libraryDependencies += {
-  CrossVersion.partialVersion(scalaVersion.value) match {
-    case Some((2, minor)) => {
-      if (minor >= 12)
-        "com.lihaoyi" %% "fastparse" % "2.3.0"
-      else
-        "com.lihaoyi" %% "fastparse" % "2.1.2"
-    }
-    case unsupportedVersion => throw new IllegalArgumentException("Bad Scala version $unsupportedVersion found")
-  }
-}
-
-libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.8" % Test
-
-organization := "com.github.salva"
-organizationHomepage := Some(url("https://github.com/salva"))
-
-scmInfo := Some(
+ThisBuild / scmInfo := Some(
   ScmInfo(
     url("https://github.com/salva/scala-glob"),
     "https://github.com/salva/scala-glob.git"
   )
 )
-
-developers := List (
+ThisBuild / developers := List(
   Developer(
     id = "salva",
     name = "Salvador Fandiño",
@@ -37,9 +27,22 @@ developers := List (
   )
 )
 
-description := "Manipulate file system glob patterns"
-licenses := Seq("APL2" -> url("https://www.apache.org/licenses/LICENSE-2.0.txt"))
-homepage := Some(url("https://github.com/salva/scala-glob"))
+lazy val root = (project in file("."))
+  .settings(
+    crossScalaVersions := supportedScalaVersions,
+    libraryDependencies += {
+      CrossVersion.partialVersion(scalaVersion.value) match {
+        case Some((2, minor)) => {
+          if (minor >= 12)
+            "com.lihaoyi" %% "fastparse" % "2.3.3"
+          else
+            "com.lihaoyi" %% "fastparse" % "2.1.2"
+        }
+        case unsupportedVersion => throw new IllegalArgumentException("Bad Scala version $unsupportedVersion found")
+      }
+    },
+    libraryDependencies += "org.scalatest" %% "scalatest-funsuite" % "3.2.10" % Test,
+  )
 
 publishTo := {
   val nexus = "https://oss.sonatype.org/"
