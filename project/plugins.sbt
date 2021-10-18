@@ -1,2 +1,6 @@
-addSbtPlugin("org.xerial.sbt" % "sbt-sonatype" % "3.4")
-addSbtPlugin("com.jsuereth" % "sbt-pgp" % "2.0.1")
+addSbtPlugin("org.xerial.sbt" % "sbt-sonatype"       % "3.4")
+addSbtPlugin("com.jsuereth"   % "sbt-pgp"            % "2.0.1")
+addSbtPlugin("org.scoverage"  % "sbt-scoverage"      % "1.9.0")
+addSbtPlugin("org.scalameta"  % "sbt-scalafmt"       % "2.4.3")
+addSbtPlugin("com.github.sbt" % "sbt-ci-release"     % "1.5.9")
+addSbtPlugin("com.codecommit" % "sbt-github-actions" % "0.13.0")

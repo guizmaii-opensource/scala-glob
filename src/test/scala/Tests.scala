@@ -2,23 +2,22 @@ import com.github.salva.scala.glob._
 import org.scalatest.funsuite.AnyFunSuite
 
 class Tests extends AnyFunSuite {
-  def testResult(glob: String, path: String, cI: Boolean, p: Boolean, result: MatchResult): Unit = {
-    test("glob " + glob + " ~ " + path +
-      (if (cI) " [CI]" else "") +
-      (if (p) "[P]" else "") +
-      " --> " + result) {
+
+  def testResult(glob: String, path: String, cI: Boolean, p: Boolean, result: MatchResult): Unit =
+    test(
+      "glob " + glob + " ~ " + path +
+        (if (cI) " [CI]" else "") +
+        (if (p) "[P]" else "") +
+        " --> " + result
+    ) {
       assert(new Glob(glob, cI).matches(path) == result)
     }
-  }
 
-  def testNoMatch(glob: String, path: String, cI: Boolean = false, p: Boolean = false): Unit =
-    testResult(glob, path, p, cI, NoMatch)
+  def testNoMatch(glob: String, path: String, cI: Boolean = false, p: Boolean = false): Unit = testResult(glob, path, p, cI, NoMatch)
 
-  def testMatch(glob: String, path: String, cI: Boolean = false, p: Boolean = false): Unit =
-    testResult(glob, path, cI, p, Match(false))
+  def testMatch(glob: String, path: String, cI: Boolean = false, p: Boolean = false): Unit = testResult(glob, path, cI, p, Match(false))
 
-  def testMatchDir(glob: String, path: String, cI: Boolean = false, p: Boolean = false): Unit =
-    testResult(glob, path, cI, p, Match(true))
+  def testMatchDir(glob: String, path: String, cI: Boolean = false, p: Boolean = false): Unit = testResult(glob, path, cI, p, Match(true))
 
   testMatch("/etc", "/etc")
   testMatch("/etc", "/etc/")
@@ -77,18 +76,21 @@ class Tests extends AnyFunSuite {
   testNoMatch("*/**t", "apt")
   /* matchingPartially */
 
-  def testPartialResult(glob: String, path: String, cI: Boolean, p: Boolean, result: MatchResult): Unit = {
-    test("glob partial " + glob + " ~ " + path +
-      (if (cI) " [CI]" else "") +
-      (if (p) " [P]" else "") +
-      " --> " + result) {
+  def testPartialResult(glob: String, path: String, cI: Boolean, p: Boolean, result: MatchResult): Unit =
+    test(
+      "glob partial " + glob + " ~ " + path +
+        (if (cI) " [CI]" else "") +
+        (if (p) " [P]" else "") +
+        " --> " + result
+    ) {
       assert(new Glob(glob, cI, p).matchesPartially(path) == result)
     }
-  }
 
-  def testPartialNoMatch(glob: String, path: String, cI: Boolean = false, p: Boolean = false): Unit = testPartialResult(glob, path, cI, p, NoMatch)
+  def testPartialNoMatch(glob: String, path: String, cI: Boolean = false, p: Boolean = false): Unit =
+    testPartialResult(glob, path, cI, p, NoMatch)
 
-  def testPartialMatchDir(glob: String, path: String, cI: Boolean = false, p: Boolean = false): Unit = testPartialResult(glob, path, cI, p, Match(true))
+  def testPartialMatchDir(glob: String, path: String, cI: Boolean = false, p: Boolean = false): Unit =
+    testPartialResult(glob, path, cI, p, Match(true))
 
   testPartialMatchDir("/etc/", "/")
   testPartialMatchDir("etc", "")
@@ -144,6 +146,5 @@ class Tests extends AnyFunSuite {
   testPartialNoMatch("/??tc/foo", "/etc")
   testPartialNoMatch("/*tc/foo", "/.etc")
   testPartialNoMatch("//*tc//foo", "/.etc")
-
 
 }

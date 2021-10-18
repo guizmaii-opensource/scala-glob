@@ -1,5 +1,8 @@
 # scala-glob
 
+[![Build Status](https://github.com/salva/scala-glob/actions/workflows/ci.yml/badge.svg)](https://github.com/salva/scala-glob/actions?query=branch%3Amaster)
+[![Maven Central](https://img.shields.io/maven-central/v/com.github.salva/scala-glob_2.12.svg)](http://search.maven.org/#search%7Cga%7C1%7Cscala-glob)
+
 This library allows one to check paths against file system glob
 patterns.
 
