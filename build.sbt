@@ -36,19 +36,9 @@ lazy val `scala-blob` =
     .in(file("."))
     .settings(
       name               := "scala-blob",
-      crossScalaVersions := supportedScalaVersions
-    )
-    .settings(
+      crossScalaVersions := supportedScalaVersions,
       libraryDependencies ++= Seq(
+        "com.lihaoyi"   %% "fastparse"          % "3.1.1",
         "org.scalatest" %% "scalatest-funsuite" % "3.2.19" % Test
-      ) ++ PartialFunction
-        .condOpt(CrossVersion.partialVersion(scalaVersion.value)) {
-          case Some((3, _))                    =>
-            Seq("com.lihaoyi" %% "fastparse" % "3.1.0")
-          case Some((2, minor)) if minor >= 12 =>
-            Seq("com.lihaoyi" %% "fastparse" % "2.3.3")
-          case unsupportedVersion              => throw new IllegalArgumentException(s"Bad Scala version $unsupportedVersion found")
-        }
-        .toList
-        .flatten
+      )
     )
