@@ -40,7 +40,7 @@ lazy val `scala-blob` =
     )
     .settings(
       libraryDependencies ++= Seq(
-        "org.scalatest" %% "scalatest-funsuite" % "3.2.10" % Test
+        "org.scalatest" %% "scalatest-funsuite" % "3.2.19" % Test
       ) ++ PartialFunction
         .condOpt(CrossVersion.partialVersion(scalaVersion.value)) {
           case Some((3, _))                    =>
