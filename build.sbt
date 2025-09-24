@@ -46,7 +46,7 @@ lazy val `scala-blob` =
           case Some((3, _))                    =>
             Seq("com.lihaoyi" %% "fastparse" % "3.1.0")
           case Some((2, minor)) if minor >= 12 =>
-            Seq("com.lihaoyi" %% "fastparse" % "2.3.3")
+            Seq("com.lihaoyi" %% "fastparse" % "3.1.1")
           case unsupportedVersion              => throw new IllegalArgumentException(s"Bad Scala version $unsupportedVersion found")
         }
         .toList
