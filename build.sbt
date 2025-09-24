@@ -1,9 +1,8 @@
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
-val scala212               = "2.12.20"
 val scala213               = "2.13.16"
 val scala3                 = "3.3.6"
-val supportedScalaVersions = List(scala212, scala213, scala3)
+val supportedScalaVersions = List(scala213, scala3)
 
 ThisBuild / version              := "0.0.3"
 ThisBuild / organization         := "com.github.salva"
@@ -16,7 +15,7 @@ ThisBuild / homepage             := Some(url("https://github.com/salva/scala-glo
 ThisBuild / scmInfo    := Some(
   ScmInfo(
     url("https://github.com/salva/scala-glob"),
-    "https://github.com/salva/scala-glob.git"
+    "https://github.com/salva/scala-glob.git",
   )
 )
 ThisBuild / developers := List(
@@ -24,7 +23,7 @@ ThisBuild / developers := List(
     id = "salva",
     name = "Salvador Fandiño",
     email = "sfandino@yahoo.com",
-    url = url("https://github.com/salva")
+    url = url("https://github.com/salva"),
   )
 )
 
@@ -39,6 +38,6 @@ lazy val `scala-blob` =
       crossScalaVersions := supportedScalaVersions,
       libraryDependencies ++= Seq(
         "com.lihaoyi"   %% "fastparse"          % "3.1.1",
-        "org.scalatest" %% "scalatest-funsuite" % "3.2.19" % Test
-      )
+        "org.scalatest" %% "scalatest-funsuite" % "3.2.19" % Test,
+      ),
     )

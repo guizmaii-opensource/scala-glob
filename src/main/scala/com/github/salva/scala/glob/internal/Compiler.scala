@@ -5,18 +5,21 @@ import java.util.regex.Pattern
 import scala.annotation.tailrec
 
 object Compiler extends CompilerHelper {
+  private val withPeriod: Compiler    = new Compiler(CompilerPatterns.withPeriod)
+  private val withoutPeriod: Compiler = new Compiler(CompilerPatterns.withoutPeriod)
 
   def compile(glob: String, caseInsensitive: Boolean, period: Boolean): (Option[Pattern], Option[Pattern]) = {
-    val compiler              = new Compiler(period)
+    val compiler              = if (period) withPeriod else withoutPeriod
     val tokens                = Parser.parseGlob(glob)
     val (mayBeDir, mustBeDir) = compiler.compileToString(tokens, Nil, "0")
     (mayBeDir.map(stringAcuToRegex(_, caseInsensitive)), mustBeDir.map(stringAcuToRegex(_, caseInsensitive)))
   }
 }
 
-class Compiler(val period: Boolean) extends CompilerHelper with CompilerPatterns {
+final class Compiler(compilerPatterns: CompilerPatterns) extends CompilerHelper {
+  import compilerPatterns._
 
-  def flushState(state: String, acu: Seq[String]): Seq[String] =
+  def flushState(state: String, acu: List[String]): List[String] =
     state match {
       case "" | "0"         => acu
       case "/" | "0/"       => "/+" +: acu
@@ -31,11 +34,11 @@ class Compiler(val period: Boolean) extends CompilerHelper with CompilerPatterns
     }
 
   @tailrec
-  final def compileToString(
-    tokens: Seq[Token],
-    acu: Seq[String] = Nil,
-    state: String
-  ): (Option[Seq[String]], Option[Seq[String]]) =
+  def compileToString(
+    tokens: List[Token],
+    acu: List[String] = Nil,
+    state: String,
+  ): (Option[List[String]], Option[List[String]]) =
     tokens match {
       case Nil           =>
         // println("> nil, state: " + state)
@@ -55,43 +58,42 @@ class Compiler(val period: Boolean) extends CompilerHelper with CompilerPatterns
       case token :: tail =>
         // println("> " + token + ", state: " + state)
         token match {
-          case Special("/")            =>
+          case Token.Special("/")            =>
             state match {
               case "" | "**" | "/**" | "0" | "0**" | "0/**" => compileToString(tail, acu, state + "/")
               case "/" | "/**/" | "0/" | "0/**/"            => compileToString(tail, acu, state)
-              case _                                        => //compileToString(tail, flushState(state, acu), "/")
+              case _                                        => // compileToString(tail, flushState(state, acu), "/")
                 internalError(s"""Invalid internal state "$state" reached""")
             }
-          case Special("**")           =>
+          case Token.Special("**")           =>
             state match {
               case "" | "/" | "0" | "0/"         => compileToString(tail, acu, state + "**")
               case "**" | "/**" | "0**" | "0/**" => compileToString(tail, acu, state)
               case _                             => compileToString(tail, flushState(state, acu), "**")
             }
-          case CurlyBrackets(branches) =>
+          case Token.CurlyBrackets(branches) =>
             if (tail != Nil) internalError("CurlyBrackets token is not last in queue")
             else if (branches.isEmpty) internalError("CurlyBrackets with no alternations found")
             else compileCurlyBrackets(branches, acu, state)
-          case _                       =>
+          case _                             =>
             val acu1 = flushState(state, acu)
             token match {
-              case Literal(literal)                => compileToString(tail, quoteString(literal) +: acu1, "")
-              case Special("*")                    => compileToString(tail, pA +: acu1, "")
-              case Special("?")                    => compileToString(tail, pQ +: acu1, "")
-              case SquareBrackets(inside, negated) =>
-                compileToString(tail, compileSquareBrackets(inside, negated, acu1), "")
-              case _                               => internalError(s"""Unexpected token "$token" found""")
+              case Token.Literal(literal)                => compileToString(tail, quoteString(literal) +: acu1, "")
+              case Token.Special("*")                    => compileToString(tail, pA +: acu1, "")
+              case Token.Special("?")                    => compileToString(tail, pQ +: acu1, "")
+              case Token.SquareBrackets(inside, negated) => compileToString(tail, compileSquareBrackets(inside, negated, acu1), "")
+              case _                                     => internalError(s"""Unexpected token "$token" found""")
             }
         }
     }
 
   def compileCurlyBrackets(
-    branches: Seq[Seq[Token]],
-    acu: Seq[String],
-    state: String
-  ): (Option[Seq[String]], Option[Seq[String]]) = {
+    branches: List[List[Token]],
+    acu: List[String],
+    state: String,
+  ): (Option[List[String]], Option[List[String]]) = {
 
-    def compileSide(side: Seq[Option[Seq[String]]], acu: Seq[String]): Option[Seq[String]] =
+    def compileSide(side: List[Option[List[String]]], acu: List[String]): Option[List[String]] =
       side.flatten match {
         case Nil         => None
         case head :: Nil => Some(head ++ acu) // not really required but simplifies the generated patterns
