@@ -42,7 +42,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        scala: [ 2.12.x, 2.13.x, 3.x ]
+        scala: [ 2.13.x, 3.x ]
         java: [ 17, 21, 25 ]
     steps:
       - uses: actions/checkout@v4

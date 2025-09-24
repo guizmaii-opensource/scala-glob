@@ -3,23 +3,25 @@ package com.github.salva.scala.glob.internal
 import java.util.regex.Pattern
 
 object CompilerHelper {
-  lazy val dontQuote = Pattern.compile("""[a-zA-Z0-9,"']*""")
+  private val dontQuote: Pattern = Pattern.compile("""[a-zA-Z0-9,"']*""")
 }
 
 trait CompilerHelper {
 
-  def stringAcuToRegex(acu: Seq[String], caseInsensitive: Boolean): Pattern = {
+  def stringAcuToRegex(acu: List[String], caseInsensitive: Boolean): Pattern = {
     val flags = if (caseInsensitive) Pattern.CASE_INSENSITIVE else 0
     Pattern.compile(acu.reverse.mkString, flags)
   }
 
-  def intersperseAndFlatten[A](seq: Seq[Seq[A]], sep: A): Seq[A] = {
-    val sepSeq = Seq(sep)
-    if (seq.isEmpty) Nil else seq.head ++ seq.tail.flatMap(sepSeq ++ _)
-  }
+  def intersperseAndFlatten[A](seq: List[List[A]], sep: A): List[A] =
+    if (seq.isEmpty) Nil
+    else {
+      val sepList = List(sep)
+      seq.head ++ seq.tail.flatMap(sepList ++ _)
+    }
 
   def internalError(msg: String): Nothing =
-    throw new IllegalStateException(s"""Internal error: ${msg}. This is an internal error, report it, please!""")
+    throw new IllegalStateException(s"""Internal error: $msg. This is an internal error, report it, please!""")
 
   def quoteString(literal: String): String = if (CompilerHelper.dontQuote.matcher(literal).matches) literal else Pattern.quote(literal)
 
@@ -28,7 +30,7 @@ trait CompilerHelper {
     else if (CompilerHelper.dontQuote.matcher(literal).matches) literal
     else "\\" + literal
 
-  def compileSquareBrackets(ranges: Seq[Range], negated: Boolean, acu: Seq[String]): Seq[String] = {
+  def compileSquareBrackets(ranges: List[Range], negated: Boolean, acu: List[String]): List[String] = {
     val start = if (negated) "[^" else "["
     "]" +: ranges.foldLeft(start +: acu)((acu, range) => compileRange(range) +: acu)
   }
